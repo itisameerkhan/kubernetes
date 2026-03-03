@@ -75,3 +75,205 @@ With Kubernetes:
 ---
 
 
+## ⭐ Architecture of Kubernetes 
+
+![demo](../assets/demo1.png)
+
+## ⭐ Kubernetes Architecture (Based on the Image)
+
+The image shows a complete Kubernetes cluster divided into two main parts: the **Control Plane** and the **Data Plane**. Together, these components form a Kubernetes cluster, which is simply a group of machines working together to run applications reliably.
+
+At the top of the image, you see the **Cluster**, which is the full system. Inside the cluster, there are two clearly separated sections. The upper section is the Control Plane, and the lower section is the Data Plane.
+
+---
+
+## ⭐ Control Plane (The Brain of Kubernetes)
+
+The Control Plane is responsible for making decisions and managing the entire cluster. In the image, you can see multiple Control Plane Nodes such as Control Plane Node 0, Node 1, and Node 2. This shows that even the brain of the system can run on multiple machines for high availability.
+
+The Control Plane does not run your application directly. Instead, it:
+
+* Decides where containers should run
+
+* Monitors cluster health
+* Restarts failed workloads
+* Maintains the desired state
+* Handles scaling and updates
+
+You can think of the Control Plane as the “manager” of the system. It continuously checks whether the actual state matches the desired state defined by you.
+
+For example, if you say, “I want 3 replicas of my backend,” the Control Plane ensures that exactly 3 are always running. If one fails, it creates another automatically.
+
+---
+
+## ⭐ Data Plane (Where Applications Actually Run)
+
+The Data Plane, also called Worker Nodes, is where your real application runs. In the image, you see Worker Node 0, Worker Node 1, Worker Node 2, and Worker Node 3. These are the machines that actually execute containers.
+
+Each Worker Node:
+
+* Runs Pods (which contain containers)
+
+* Communicates with the Control Plane
+* Handles application traffic
+* Reports status back to the Control Plane
+
+If a Worker Node fails, the Control Plane detects the issue and reschedules the affected Pods onto another available Worker Node. This ensures high availability and reliability.
+
+---
+
+## ⭐ How Everything Works Together
+
+When you deploy an application to Kubernetes:
+
+1. You submit a configuration (YAML file).
+
+2. The Control Plane reads your configuration.
+3. It decides which Worker Node should run each Pod.
+4. The Worker Nodes start the containers.
+5. The Control Plane continuously monitors everything.
+
+If something crashes in the Data Plane, the Control Plane immediately reacts and fixes it.
+
+---
+
+![demo](../assets/demo2.png)
+
+## ⭐ Kubernetes Architecture (Detailed – Based on This Image)
+
+This image shows a more detailed view of Kubernetes architecture inside a cluster. The cluster is divided into two main sections: the Control Plane and the Data Plane. It also shows how Kubernetes communicates with the Cloud API.
+
+At a high level, the Control Plane is responsible for managing the cluster, while the Data Plane is responsible for running the actual application workloads. The arrows in the diagram show how different components communicate with each other.
+
+---
+
+## ⭐ Control Plane (Cluster Management Layer)
+
+Inside the Control Plane Node, you can see multiple core components:
+
+The API Server (api) is the central entry point of the cluster. Every request, whether from kubectl, internal components, or cloud systems, goes through the API Server. It acts like the main gateway of Kubernetes. All components talk to each other through this API.
+
+The etcd component is the key-value database of Kubernetes. It stores the entire cluster state, such as which pods are running, configurations, secrets, and desired replicas. When you deploy something, the configuration is stored in etcd.
+
+The Scheduler (sched) is responsible for deciding where a new Pod should run. When a new workload is created, the scheduler checks available worker nodes and selects the best one based on resources like CPU and memory.
+
+The Controller Manager (c-m) continuously monitors the cluster state. It ensures that the desired state matches the actual state. For example, if you say you want 3 replicas and one crashes, the controller creates a new one automatically.
+
+The Cloud Controller Manager (c-c-m) connects Kubernetes to the Cloud API. If you are running Kubernetes in a cloud environment like AWS, Azure, or GCP, this component interacts with cloud services for load balancers, storage, and networking.
+
+All these components work together, but the API Server acts as the communication hub between them.
+
+---
+
+## ⭐ Data Plane (Where Applications Run)
+
+The Data Plane contains Worker Nodes. Inside each Worker Node, you see:
+
+Workloads – These represent Pods running your actual application containers, such as frontend, backend, or database.
+
+Kubelet – This is the agent running on every worker node. It communicates with the API Server and ensures that containers described in Pod specs are running properly.
+
+Kube-proxy – This handles networking. It manages routing rules so that traffic can reach the correct Pod. It enables service discovery and internal load balancing.
+
+In simple terms, the Worker Node executes the work, while continuously reporting back to the Control Plane.
+
+---
+
+## ⭐ How Everything Connects
+
+When you deploy an application:
+
+First, you send a request using kubectl.
+The request goes to the API Server.
+The API Server stores the configuration in etcd.
+The Scheduler chooses a Worker Node.
+The Kubelet on that Worker Node starts the containers.
+Kube-proxy ensures network traffic reaches the correct Pod.
+
+If something fails, the Controller Manager detects the issue and instructs the system to correct it.
+
+If running in cloud, the Cloud Controller Manager talks to the Cloud API to create load balancers or storage volumes.
+
+---
+
+## ⭐ Kubernetes Control Plane Components (ccm, cm, api, sched, etcd)
+
+This image shows the internal brain components of Kubernetes inside the Control Plane and how they interact with Worker Nodes. Let’s clearly understand each component in simple language.
+
+---
+
+### ⚡ API Server (api)
+
+The API Server is the main entry point of Kubernetes. Every command you run using `kubectl`, every internal communication, and every component interaction goes through the API Server. It validates requests, processes them, and updates the cluster state. All other components talk to each other through the API Server, making it the communication hub of the entire cluster.
+
+---
+
+### ⚡ etcd
+
+etcd is the database of Kubernetes. It stores the entire cluster’s configuration and current state as key-value pairs. Information like running pods, deployments, secrets, and node details are all stored inside etcd. When you apply a YAML file, the desired state is saved in etcd, and other components read from it to maintain consistency. If etcd fails, Kubernetes loses knowledge of the cluster’s state.
+
+---
+
+### ⚡ Scheduler (sched)
+
+The Scheduler is responsible for deciding where a new Pod should run. When a Pod is created, it first stays in a pending state. The Scheduler checks available Worker Nodes and selects the best one based on resources like CPU and memory. After selecting the node, it informs the API Server, and the Pod gets assigned to that specific Worker Node.
+
+---
+
+### ⚡ Controller Manager (cm)
+
+The Controller Manager ensures that the cluster’s actual state matches the desired state. If you specify that three replicas should run but only two are active, it automatically creates one more. If a node fails or a Pod crashes, it detects the issue and corrects it. It continuously watches the system and makes adjustments to maintain stability.
+
+---
+
+### ⚡ Cloud Controller Manager (ccm)
+
+The Cloud Controller Manager connects Kubernetes to cloud providers. It communicates with the cloud platform’s API to create load balancers, attach storage volumes, manage networking, and handle node lifecycle events. When you create a LoadBalancer service, this component interacts with the cloud provider to provision the required infrastructure automatically.
+
+### ⚡ kubectl
+
+kubectl is the command-line tool used to interact with a Kubernetes cluster. It is not part of the cluster itself. Instead, it is installed on your local machine or admin server. Whenever you run commands like kubectl apply, kubectl get pods, or kubectl delete, the request is sent to the API Server inside the Control Plane.
+
+kubectl does not directly create pods or manage containers. It simply sends instructions to the API Server. The API Server then updates etcd, and the other Control Plane components take action accordingly.
+
+In simple terms, kubectl is your remote control to manage Kubernetes.
+
+### ⚡ kube-proxy
+
+kube-proxy runs inside every Worker Node. It is responsible for handling network communication between services and pods inside the cluster. When you create a Service, kube-proxy sets up networking rules so that traffic is routed to the correct Pod.
+
+---
+
+## ⭐ Kubernetes Standard Interfaces (CRI, CNI, CSI)
+
+Kubernetes is designed as a modular system. Instead of tightly coupling container runtime, networking, and storage into the core system, it defines standard interfaces. These interfaces allow external components to integrate cleanly with Kubernetes. This design makes the platform flexible, extensible, and vendor-neutral.
+
+---
+
+### ⚡ Container Runtime Interface (CRI)
+
+The Container Runtime Interface allows Kubernetes to communicate with container runtimes. Kubernetes itself does not run containers directly; it depends on a runtime such as containerd or CRI-O. Through CRI, Kubernetes sends instructions like creating, starting, or stopping containers.
+
+Because of this interface, Kubernetes is not locked to a single container runtime. Any runtime that implements CRI can work with Kubernetes. This keeps the system flexible and allows runtime innovation without modifying Kubernetes core components.
+
+---
+
+### ⚡ Container Network Interface (CNI)
+
+The Container Network Interface enables Kubernetes to manage networking through external plugins. Networking in Kubernetes is not hardcoded into the core system. Instead, Kubernetes relies on CNI-compatible plugins such as Calico, Flannel, or Cilium.
+
+These plugins handle tasks like assigning IP addresses, enabling pod-to-pod communication, and managing network policies. Since they follow the CNI standard, they can be swapped or upgraded independently of Kubernetes itself.
+
+---
+
+### ⚡ Container Storage Interface (CSI)
+
+The Container Storage Interface allows Kubernetes to integrate with different storage systems. When applications require persistent storage, Kubernetes communicates with external storage providers through CSI drivers.
+
+These drivers manage operations such as attaching, detaching, mounting, and provisioning storage volumes. Whether the storage is from a cloud provider or an on-premise system, as long as it follows the CSI standard, it can work with Kubernetes.
+
+---
+
+By defining CRI, CNI, and CSI, Kubernetes separates responsibilities and allows runtime, networking, and storage innovations to evolve independently while still integrating seamlessly into the cluster.
+
+
