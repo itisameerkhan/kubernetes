@@ -276,4 +276,70 @@ These drivers manage operations such as attaching, detaching, mounting, and prov
 
 By defining CRI, CNI, and CSI, Kubernetes separates responsibilities and allows runtime, networking, and storage innovations to evolve independently while still integrating seamlessly into the cluster.
 
+![demo](../assets/demo3.png)
 
+## ⭐ Container Runtime Interface (CRI) – How Kubernetes Talks to Runtimes
+
+Kubernetes does not run containers directly. The component responsible for running containers on each worker node is the kubelet, but kubelet itself does not create containers. Instead, it communicates with a container runtime using a standard called the Container Runtime Interface (CRI).
+
+In the earlier setup, Kubernetes worked with Docker using something called dockershim. The flow was: kubelet → CRI → dockershim → Docker → containerd → containers. Dockershim acted as a translator because Docker was not originally built to follow CRI directly. This extra layer made the architecture more complex.
+
+Later, Kubernetes removed dockershim and moved to a cleaner model. In the newer architecture, kubelet talks directly to a CRI-compatible runtime like containerd or CRI-O. The flow becomes: kubelet → CRI → container runtime → containers. This removes unnecessary layers and simplifies the system.
+
+Containerd and CRI-O are examples of container runtimes that implement CRI natively. Because they follow the CRI standard, kubelet can communicate with them directly without needing a translation layer. This makes Kubernetes more modular and efficient.
+
+The important idea here is that CRI acts as a standard communication contract. As long as a container runtime implements CRI, Kubernetes can use it. This gives flexibility to swap runtimes without redesigning the entire system.
+
+## ⭐ Container Network Interface (CNI)
+
+The Container Network Interface (CNI) defines how Kubernetes handles networking for Pods. Kubernetes itself does not implement detailed networking logic. Instead, it relies on CNI plugins to configure networking when Pods are created or deleted.
+
+When a new Pod starts on a worker node, the kubelet calls the CNI plugin. The plugin assigns an IP address to the Pod, configures network routes, and ensures the Pod can communicate with other Pods inside the cluster. When the Pod is removed, the CNI plugin cleans up the network configuration.
+
+Because Kubernetes follows the CNI standard, different networking solutions can be used depending on requirements.
+
+Calico is a popular CNI plugin focused on networking and network security policies. It provides advanced features like fine-grained network policy control.
+
+Flannel is a simpler CNI plugin mainly designed to enable basic Pod-to-Pod communication across nodes. It is lightweight and easy to set up.
+
+Cilium is a more advanced networking solution that uses eBPF technology to provide high-performance networking, security, and observability.
+
+In cloud environments, cloud-specific CNI plugins are often used. For example, Amazon VPC CNI integrates Pods directly with AWS VPC networking so that Pods receive IP addresses from the VPC. Azure CNI integrates with Azure Virtual Networks, and Google Cloud CNI integrates with Google Cloud networking infrastructure.
+
+The key idea is that Kubernetes defines the networking contract through CNI, and different plugins implement that contract. This allows Kubernetes clusters to choose or switch networking solutions without changing the core Kubernetes system.
+
+## ⭐ Container Storage Interface (CSI)
+
+The Container Storage Interface (CSI) defines how Kubernetes connects to external storage systems. Kubernetes itself does not directly manage disks, cloud volumes, or storage devices. Instead, it uses CSI drivers to communicate with storage providers in a standardized way.
+
+When a Pod requires persistent storage, Kubernetes creates a PersistentVolume and attaches it using a CSI driver. The CSI driver handles operations such as provisioning the volume, attaching it to a node, mounting it inside the container, and detaching it when the Pod is deleted.
+
+Because CSI is a standard interface, different storage systems can integrate with Kubernetes without modifying Kubernetes core components.
+
+---
+
+### ⚡ Cloud-Specific CSI Drivers
+
+Cloud providers offer their own CSI drivers to integrate their storage services directly into Kubernetes.
+
+The Amazon EBS CSI Driver allows Kubernetes to provision and attach AWS Elastic Block Store volumes dynamically to Pods running in AWS.
+
+The Compute Engine Persistent Disk CSI Driver enables Kubernetes clusters in Google Cloud to use persistent disks as storage volumes.
+
+The Azure Disk CSI Driver integrates Azure managed disks with Kubernetes workloads running in Azure.
+
+These drivers allow cloud storage to be dynamically created, attached, resized, and deleted directly through Kubernetes configurations.
+
+---
+
+### ⚡ Specialized CSI Drivers
+
+Beyond cloud storage, CSI drivers also support other types of integrations.
+
+The Cert Manager CSI Driver allows certificates to be mounted directly into Pods securely.
+
+The Secrets Store CSI Driver enables external secret management systems (such as cloud secret managers) to inject secrets into Pods as mounted volumes.
+
+---
+
+CSI makes Kubernetes storage flexible and extensible. Instead of being limited to one storage backend, Kubernetes can integrate with multiple storage systems through standardized drivers, allowing persistent data management across different environments.
