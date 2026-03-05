@@ -77,7 +77,7 @@ With Kubernetes:
 
 ## ⭐ Architecture of Kubernetes 
 
-![demo](../assets/demo1.png)
+![demo](../assets/demo001.png)
 
 ## ⭐ Kubernetes Architecture (Based on the Image)
 
@@ -137,7 +137,7 @@ If something crashes in the Data Plane, the Control Plane immediately reacts and
 
 ---
 
-![demo](../assets/demo2.png)
+![demo](../assets/demo002.png)
 
 ## ⭐ Kubernetes Architecture (Detailed – Based on This Image)
 
