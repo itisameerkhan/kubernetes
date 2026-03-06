@@ -120,15 +120,15 @@ spec:
 apiVersion: v1
 kind: Pod
 metadata: 
-  name: calc-pod
+  name: kube-web
   labels: 
-    project: calculator
+    app: kube-web-app
 spec: 
-  containers: 
-    - name: calc
-      image: calc/calc-image
-      ports: 
-        - containerPort: 5173
+  containers:
+    - name: kube-web
+      image: itisameerkhan/kube-web-backend:v1
+      ports:
+        - containerPort: 8080
 ``` 
 
 In this example:
@@ -181,42 +181,42 @@ kubectl describe pod <pod-name>
 kubectl describe pod calc-pod
 ```
 
-```cmd
-Name:             calc-pod
+```
+Name:             kube-web
 Namespace:        default
 Priority:         0
 Service Account:  default
 Node:             docker-desktop/192.168.65.3
-Start Time:       Thu, 05 Mar 2026 12:38:57 +0000
-Labels:           project=calculator
+Start Time:       Fri, 06 Mar 2026 10:58:09 +0530
+Labels:           app=kube-web-app
 Annotations:      <none>
-Status:           Pending
-IP:               10.1.0.6
+Status:           Running
+IP:               10.1.0.19
 IPs:
-  IP:  10.1.0.6
+  IP:  10.1.0.19
 Containers:
-  calc:
-    Container ID:
-    Image:          calc/calc-image
-    Image ID:
-    Port:           5173/TCP
+  kube-web:
+    Container ID:   docker://9d6976206ee7e1d498b4a01bd96a2f1d52a7eab9c6b68c4a5276e92a51c43df5
+    Image:          itisameerkhan/kube-web-backend:v1
+    Image ID:       docker-pullable://itisameerkhan/kube-web-backend@sha256:dfde0a806220350834a73fc09ed37ca3b7c9241ad6c238ae659a34acebdf1b71
+    Port:           8080/TCP
     Host Port:      0/TCP
-    State:          Waiting
-      Reason:       ImagePullBackOff
-    Ready:          False
+    State:          Running
+      Started:      Fri, 06 Mar 2026 10:58:15 +0530
+    Ready:          True
     Restart Count:  0
     Environment:    <none>
     Mounts:
-      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-mmv5b (ro)
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-mlgzh (ro)
 Conditions:
   Type                        Status
   PodReadyToStartContainers   True
   Initialized                 True
-  Ready                       False
-  ContainersReady             False
+  Ready                       True
+  ContainersReady             True
   PodScheduled                True
 Volumes:
-  kube-api-access-mmv5b:
+  kube-api-access-mlgzh:
     Type:                    Projected (a volume that contains injected data from multiple sources)
     TokenExpirationSeconds:  3607
     ConfigMapName:           kube-root-ca.crt
@@ -227,12 +227,11 @@ Node-Selectors:              <none>
 Tolerations:                 node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
                              node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
 Events:
-  Type     Reason     Age                  From               Message
-  ----     ------     ----                 ----               -------
-  Normal   Scheduled  4m16s                default-scheduler  Successfully assigned default/calc-pod to docker-desktop
-  Normal   Pulling    70s (x5 over 4m16s)  kubelet            Pulling image "calc/calc-image"
-  Warning  Failed     68s (x5 over 4m14s)  kubelet            Failed to pull image "calc/calc-image": Error response from daemon: pull access denied for calc/calc-image, repository does not exist or may require 'docker login'
-  Warning  Failed     68s (x5 over 4m14s)  kubelet            Error: ErrImagePull
-  Normal   BackOff    7s (x15 over 4m14s)  kubelet            Back-off pulling image "calc/calc-image"
-  Warning  Failed     7s (x15 over 4m14s)  kubelet            Error: ImagePullBackOff
-  ```   
+  Type    Reason     Age   From               Message
+  ----    ------     ----  ----               -------
+  Normal  Scheduled  19s   default-scheduler  Successfully assigned default/kube-web to docker-desktop
+  Normal  Pulling    18s   kubelet            Pulling image "itisameerkhan/kube-web-backend:v1"
+  Normal  Pulled     13s   kubelet            Successfully pulled image "itisameerkhan/kube-web-backend:v1" in 4.816s (4.816s including waiting). Image size: 58801108 bytes.
+  Normal  Created    13s   kubelet            Created container: kube-web
+  Normal  Started    13s   kubelet            Started container kube-web
+```
