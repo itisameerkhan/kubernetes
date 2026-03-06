@@ -363,3 +363,408 @@ Once the container starts successfully, the Pod becomes active and the cluster r
 Kubernetes continuously repeats this process. If a Pod crashes again or a node fails, Kubernetes automatically creates new Pods to replace the failed ones.
 
 This automatic detection and recovery mechanism is known as **self-healing**, which helps maintain application availability without manual intervention.
+
+---
+
+## ⭐ Creating a ReplicaSet
+
+```yml
+# pod.yml
+apiVersion: v1
+kind: Pod
+metadata: 
+  name: kube-web
+  labels: 
+    app: kube-web-app
+spec: 
+  containers:
+    - name: kube-web
+      image: itisameerkhan/kube-web-backend:v1
+      ports:
+        - containerPort: 8080
+```
+
+```yml
+# replica-set.yml
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+  name: kube-web-rs
+  labels:
+    app: kube-web-rs-l
+spec:
+  replicas: 3
+  selector: 
+    matchLabels:
+      app: kube-web-app
+  template: 
+    metadata:
+      labels:
+        app: kube-web-app
+    spec: 
+      containers: 
+        - name: kube-web
+          image: itisameerkhan/kube-web-backend:v1
+          ports:
+            - containerPort: 8080
+```
+
+
+### ⚡ Check replica set
+
+```bash
+kubectl get rs
+```
+
+```cmd
+NAME          DESIRED   CURRENT   READY   AGE
+kube-web-rs   3         3         3       16s
+```
+
+### ⚡Checking the Pods 
+
+```bash
+kubectl get pods
+``` 
+
+```bash
+NAME                READY   STATUS    RESTARTS   AGE
+kube-web            1/1     Running   0          52m
+kube-web-rs-ccz92   1/1     Running   0          2m47s
+kube-web-rs-d89j8   1/1     Running   0          2m47s
+```
+
+### ⚡ Deleting one pod
+
+```bash
+kubectl delete pod kube-web-rs-ccz92
+```
+
+```cmd
+pod "kube-web-rs-ccz92" deleted from default namespace
+```
+
+### ⚡ Checking the pods
+
+```bash
+kubectl get pods
+```
+
+```cmd
+NAME                READY   STATUS    RESTARTS   AGE
+kube-web            1/1     Running   0          54m
+kube-web-rs-d89j8   1/1     Running   0          4m34s
+kube-web-rs-x8s5b   1/1     Running   0          43s
+```
+
+### ⚡ Deleting all 3 pods 
+
+```cmd
+kubectl delete pod kube-web kube-web-rs-d89j8 kube-web-rs-x8s5b
+```
+### ⚡ Checking the pods 
+
+```bash
+kubectl get pods
+```
+
+```
+NAME                READY   STATUS    RESTARTS   AGE
+kube-web-rs-khkqk   1/1     Running   0          2m8s
+kube-web-rs-n56x5   1/1     Running   0          2m8s
+kube-web-rs-zs8sl   1/1     Running   0          2m8s
+```
+
+### ⚡ Get ReplicaSet
+
+```bash
+kubectl get rs
+```
+
+```
+NAME          DESIRED   CURRENT   READY   AGE
+kube-web-rs   3         3         3       10m
+```
+
+### ⚡ Get FullDetails about one ReplicaSet
+
+```bash
+kubectl describe rs kube-web-rs
+```
+
+```
+Name:         kube-web-rs
+Namespace:    default
+Selector:     app=kube-web-app
+Labels:       app=kube-web-rs-l
+Annotations:  <none>
+Replicas:     3 current / 3 desired
+Pods Status:  3 Running / 0 Waiting / 0 Succeeded / 0 Failed
+Pod Template:
+  Labels:  app=kube-web-app
+  Containers:
+   kube-web:
+    Image:         itisameerkhan/kube-web-backend:v1
+    Port:          8080/TCP
+    Host Port:     0/TCP
+    Environment:   <none>
+    Mounts:        <none>
+  Volumes:         <none>
+  Node-Selectors:  <none>
+  Tolerations:     <none>
+Events:
+  Type    Reason            Age    From                   Message
+  ----    ------            ----   ----                   -------
+  Normal  SuccessfulCreate  11m    replicaset-controller  Created pod: kube-web-rs-ccz92
+  Normal  SuccessfulCreate  11m    replicaset-controller  Created pod: kube-web-rs-d89j8
+  Normal  SuccessfulCreate  7m10s  replicaset-controller  Created pod: kube-web-rs-x8s5b
+  Normal  SuccessfulCreate  4m     replicaset-controller  Created pod: kube-web-rs-zs8sl
+  Normal  SuccessfulCreate  4m     replicaset-controller  Created pod: kube-web-rs-khkqk
+  Normal  SuccessfulCreate  4m     replicaset-controller  Created pod: kube-web-rs-n56x5
+```
+
+### ⚡ Updating the replicas in ReplicaSet
+
+```yml
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+  name: kube-web-rs
+  labels:
+    app: kube-web-rs-l
+spec:
+  replicas: 5
+  selector: 
+    matchLabels:
+      app: kube-web-app
+  template: 
+    metadata:
+      labels:
+        app: kube-web-app
+    spec: 
+      containers: 
+        - name: kube-web
+          image: itisameerkhan/kube-web-backend:v1
+          ports:
+            - containerPort: 8080
+```
+
+```
+kubectl apply -f replica-set.yml
+```
+
+#### output
+ 
+```
+replicaset.apps/kube-web-rs configured
+```
+
+```
+kubectl describe rs kube-web-rs
+```
+
+```
+Name:         kube-web-rs
+Namespace:    default
+Selector:     app=kube-web-app
+Labels:       app=kube-web-rs-l
+Annotations:  <none>
+Replicas:     5 current / 5 desired
+Pods Status:  5 Running / 0 Waiting / 0 Succeeded / 0 Failed
+Pod Template:
+  Labels:  app=kube-web-app
+  Containers:
+   kube-web:
+    Image:         itisameerkhan/kube-web-backend:v1
+    Port:          8080/TCP
+    Host Port:     0/TCP
+    Environment:   <none>
+    Mounts:        <none>
+  Volumes:         <none>
+  Node-Selectors:  <none>
+  Tolerations:     <none>
+Events:
+  Type    Reason            Age    From                   Message
+  ----    ------            ----   ----                   -------
+  Normal  SuccessfulCreate  14m    replicaset-controller  Created pod: kube-web-rs-ccz92
+  Normal  SuccessfulCreate  14m    replicaset-controller  Created pod: kube-web-rs-d89j8
+  Normal  SuccessfulCreate  11m    replicaset-controller  Created pod: kube-web-rs-x8s5b
+  Normal  SuccessfulCreate  7m55s  replicaset-controller  Created pod: kube-web-rs-zs8sl
+  Normal  SuccessfulCreate  7m55s  replicaset-controller  Created pod: kube-web-rs-khkqk
+  Normal  SuccessfulCreate  7m55s  replicaset-controller  Created pod: kube-web-rs-n56x5
+  Normal  SuccessfulCreate  47s    replicaset-controller  Created pod: kube-web-rs-sw4vm
+  Normal  SuccessfulCreate  47s    replicaset-controller  Created pod: kube-web-rs-44jc8
+```
+
+```
+NAME                READY   STATUS    RESTARTS   AGE
+kube-web-rs-44jc8   1/1     Running   0          88s
+kube-web-rs-khkqk   1/1     Running   0          8m36s
+kube-web-rs-n56x5   1/1     Running   0          8m36s
+kube-web-rs-sw4vm   1/1     Running   0          88s
+kube-web-rs-zs8sl   1/1     Running   0          8m36s
+```
+
+### ⚡ Updating the replica without changing the file 
+
+```
+kubectl scale rs kube-web-rs --replicas=7
+```
+
+#### output
+```
+replicaset.apps/kube-web-rs scaled
+```
+
+```
+kubectl get pods
+```
+
+```
+NAME                READY   STATUS    RESTARTS   AGE
+kube-web-rs-259ld   1/1     Running   0          29s
+kube-web-rs-44jc8   1/1     Running   0          3m27s
+kube-web-rs-78lmj   1/1     Running   0          29s
+kube-web-rs-khkqk   1/1     Running   0          10m
+kube-web-rs-kj9f8   1/1     Running   0          29s
+kube-web-rs-n56x5   1/1     Running   0          10m
+kube-web-rs-sw4vm   1/1     Running   0          3m27s
+kube-web-rs-vfdtd   1/1     Running   0          29s
+kube-web-rs-xtqxm   1/1     Running   0          29s
+kube-web-rs-zs8sl   1/1     Running   0          10m
+```
+
+```
+kubectl describe rs kube-web-rs
+```
+
+```
+NAME                READY   STATUS    RESTARTS   AGE
+kube-web-rs-259ld   1/1     Running   0          29s
+kube-web-rs-44jc8   1/1     Running   0          3m27s
+kube-web-rs-78lmj   1/1     Running   0          29s
+kube-web-rs-khkqk   1/1     Running   0          10m
+kube-web-rs-kj9f8   1/1     Running   0          29s
+kube-web-rs-n56x5   1/1     Running   0          10m
+kube-web-rs-sw4vm   1/1     Running   0          3m27s
+kube-web-rs-vfdtd   1/1     Running   0          29s
+kube-web-rs-xtqxm   1/1     Running   0          29s
+kube-web-rs-zs8sl   1/1     Running   0          10m
+PS C:\Users\itisa\OneDrive\Desktop\kubernetes-demo> kubectl describe rs kube-web-rs
+Name:         kube-web-rs
+Namespace:    default
+Selector:     app=kube-web-app
+Labels:       app=kube-web-rs-l
+Annotations:  <none>
+Replicas:     10 current / 10 desired
+Pods Status:  10 Running / 0 Waiting / 0 Succeeded / 0 Failed
+Pod Template:
+  Labels:  app=kube-web-app
+  Containers:
+   kube-web:
+    Image:         itisameerkhan/kube-web-backend:v1
+    Port:          8080/TCP
+    Host Port:     0/TCP
+    Environment:   <none>
+    Mounts:        <none>
+  Volumes:         <none>
+  Node-Selectors:  <none>
+  Tolerations:     <none>
+Events:
+  Type    Reason            Age                From                   Message
+  ----    ------            ----               ----                   -------
+  Normal  SuccessfulCreate  17m                replicaset-controller  Created pod: kube-web-rs-ccz92
+  Normal  SuccessfulCreate  17m                replicaset-controller  Created pod: kube-web-rs-d89j8
+  Normal  SuccessfulCreate  14m                replicaset-controller  Created pod: kube-web-rs-x8s5b
+  Normal  SuccessfulCreate  10m                replicaset-controller  Created pod: kube-web-rs-zs8sl
+  Normal  SuccessfulCreate  10m                replicaset-controller  Created pod: kube-web-rs-khkqk
+  Normal  SuccessfulCreate  10m                replicaset-controller  Created pod: kube-web-rs-n56x5
+  Normal  SuccessfulCreate  3m47s              replicaset-controller  Created pod: kube-web-rs-sw4vm
+  Normal  SuccessfulCreate  3m47s              replicaset-controller  Created pod: kube-web-rs-44jc8
+  Normal  SuccessfulCreate  49s                replicaset-controller  Created pod: kube-web-rs-78lmj
+  Normal  SuccessfulCreate  49s (x4 over 49s)  replicaset-controller  (combined from similar events): Created pod: kube-web-rs-kj9f8
+```
+
+## ⭐ Use of ReplicaSet
+
+A ReplicaSet in Kubernetes is used to ensure that a specified number of identical Pods are always running in the cluster. Its main purpose is to maintain the desired number of Pod replicas and automatically replace any Pods that fail or are deleted.
+
+When you define a ReplicaSet, you specify the desired number of Pods using the **replicas** field in the YAML configuration. The ReplicaSet controller constantly checks the cluster and compares the **desired state** with the **actual state**.
+
+For example, if the ReplicaSet configuration says that **3 Pods should be running**, Kubernetes continuously monitors the cluster. If one Pod crashes or gets deleted and only **2 Pods remain**, the ReplicaSet automatically creates a new Pod to bring the total back to **3**. This helps maintain application availability.
+
+ReplicaSet also uses **labels and selectors** to identify which Pods it should manage. It looks for Pods that match the specified labels and ensures that the required number of those Pods are always running.
+
+---
+
+## ⭐ Increasing or Decreasing Replica Count in a ReplicaSet
+
+In Kubernetes, the number of Pods managed by a ReplicaSet can be changed by modifying the **replica count**. This process is called **scaling**. Scaling can be done in two ways: **Imperative** and **Declarative**.
+
+---
+
+### ⚡ Imperative Method
+
+In the imperative approach, you directly give a command to Kubernetes to change the number of replicas. This method is quick and is usually used from the command line.
+
+For example, if you want to increase the number of replicas to **5**, you can run:
+
+```bash
+kubectl scale replicaset kube-web-rs --replicas=5
+```
+
+If you want to reduce the number of replicas to **2**, you can run:
+
+```bash
+kubectl scale replicaset kube-web-rs --replicas=2
+```
+
+Kubernetes immediately updates the ReplicaSet and creates or removes Pods to match the new replica count.
+
+---
+
+### ⚡ Declarative Method
+
+In the declarative approach, you modify the **ReplicaSet YAML file** and update the value of the `replicas` field.
+
+Example:
+
+```yaml
+spec:
+  replicas: 5
+```
+
+After modifying the file, apply the changes using:
+
+```bash
+kubectl apply -f replicaset.yaml
+```
+
+Kubernetes reads the updated configuration and adjusts the number of Pods to match the new desired state.
+
+---
+
+## ⭐ Role of Label Selectors in a ReplicaSet
+
+Label selectors are used by a ReplicaSet to identify which Pods it should manage. In a Kubernetes cluster there can be many Pods running, so the ReplicaSet needs a way to determine which Pods belong to it. This is done using labels and selectors.
+
+A label is a key-value pair attached to a Pod, while a label selector is used by the ReplicaSet to search for Pods that have matching labels. The ReplicaSet continuously checks the cluster and looks for Pods whose labels match the selector defined in the ReplicaSet configuration.
+
+For example, if the ReplicaSet selector is defined as:
+
+```yaml
+selector:
+  matchLabels:
+    app: kube-web-app
+```
+
+The ReplicaSet will only manage Pods that contain the label:
+
+```yaml
+labels:
+  app: kube-web-app
+```
+
+If a Pod with this label is deleted or crashes, the ReplicaSet detects that the number of Pods has decreased and automatically creates a new Pod to maintain the desired number of replicas.
+
+In simple terms, label selectors allow the ReplicaSet to **find, monitor, and manage the correct set of Pods** inside the Kubernetes cluster.
