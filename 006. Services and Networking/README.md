@@ -37,6 +37,7 @@ Once matching Pods are found, Kubernetes collects their **IP addresses and ports
 Whenever traffic comes to the Service, Kubernetes forwards that traffic to one of the Pod IP addresses listed in the Endpoint.
 
 ---
+![demo](../assets/demo008.png)
 
 ## ⭐ How Service, Endpoints, and kube-proxy Work Together in a Microservices Application
 
@@ -156,6 +157,11 @@ If a Pod is deleted or recreated:
 4. Traffic continues to flow correctly to the remaining Pods.
 
 This automatic update mechanism ensures reliable communication even when Pods are constantly created or deleted.
+
+---
+
+
+
 
 
 
