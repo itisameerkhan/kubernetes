@@ -82,3 +82,296 @@ In Kubernetes, a Deployment keeps the history of previous versions of an applica
 This allows Kubernetes to roll back to a previous version if the new version fails or causes problems.
 
 ![demo](../assets/demo002.gif)
+
+### ⚡ Creating a ReplicaSet 
+
+```yml
+apiVersion: apps/v1
+kind: ReplicaSet 
+metadata:
+  name: node-backend-rs
+  labels:
+    app: node-backend-rs-label
+spec: 
+  replicas: 3
+  selector: 
+    matchLabels:
+      app: kube-web-backend
+  template:
+    metadata:
+      labels:
+        app: kube-web-backend
+    spec: 
+      containers:
+        - name: kube-web-backend-container
+          image: itisameerkhan/kube-web-backend:v1
+          ports:
+            - containerPort: 8080
+
+
+---
+apiVersion: v1
+kind: Service 
+metadata:
+  name: node-backend-service 
+  labels:
+    app: node-backend-service-labels
+spec: 
+  type: NodePort
+  selector: 
+    app: kube-web-backend
+  ports: 
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
+      nodePort: 30080
+```
+
+![demo](../assets/demo015.png)
+
+
+```cmd
+kubectl apply -f replicaSet.yml
+```
+
+```cmd
+minikube service node-backend-service --url
+```
+
+#### watch pods 
+
+```
+kubectl get pods --watch
+```
+
+#### Delete the replica set 
+
+```
+kubectl delete rs node-backend-rs
+```
+
+### ⚡ Changing the image to v2
+
+```yml
+apiVersion: apps/v1
+kind: ReplicaSet 
+metadata:
+  name: node-backend-rs
+  labels:
+    app: node-backend-rs-label
+spec: 
+  replicas: 3
+  selector: 
+    matchLabels:
+      app: kube-web-backend
+  template:
+    metadata:
+      labels:
+        app: kube-web-backend
+    spec: 
+      containers:
+        - name: kube-web-backend-container
+          image: itisameerkhan/kube-web-backend:v2
+          ports:
+            - containerPort: 8080
+
+
+---
+apiVersion: v1
+kind: Service 
+metadata:
+  name: node-backend-service 
+  labels:
+    app: node-backend-service-labels
+spec: 
+  type: NodePort
+  selector: 
+    app: kube-web-backend
+  ports: 
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
+      nodePort: 30080
+```
+
+---
+
+## ⭐ creating a deployment 
+
+```yml
+apiVersion: apps/v1
+kind: Deployment 
+metadata: 
+  name: node-backend-deployment
+  labels:
+    app: node-backend-deployment-label
+spec: 
+  replicas: 3
+  strategy: 
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app: kube-web-backend 
+  template:
+    metadata:
+      labels:
+        app: kube-web-backend
+    spec: 
+      containers:  
+        - name: kube-web-backend-container
+          image: itisameeerkhan/kube-web-backend:v1
+          ports: 
+            - containerPort: 8080
+
+---
+apiVersion: v1 
+kind: Service 
+metadata:
+  name: node-backend-service 
+  labels: 
+    app: node-backend-service-label
+spec: 
+  type: NodePort
+  selector: 
+       app: kube-web-backend
+  ports: 
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
+      nodePort: 30080
+```
+
+```bash
+# output
+node-backend-deployment-6465674fc5-tsgl7   0/1     ContainerCreating        0          0s
+node-backend-deployment-6465674fc5-rzg2g   0/1     ContainerCreating        0          0s
+node-backend-deployment-6465674fc5-xcdvx   0/1     ContainerCreating        0          0s  
+node-backend-deployment-6465674fc5-tsgl7   1/1     Running                  0          2s
+node-backend-deployment-6465674fc5-xcdvx   1/1     Running                  0          2s
+node-backend-deployment-6465674fc5-rzg2g   1/1     Running                  0          2s
+```
+
+```cmd
+kubectl apply -f deployment.yml
+```
+
+#### Watch
+
+```
+kubectl get pods --watch
+```
+
+#### url from minikube
+
+```
+minikube service node-backend-service --url
+```
+
+### ⚡ Now im changing v1 to v2 
+
+```yml
+apiVersion: apps/v1
+kind: Deployment 
+metadata: 
+  name: node-backend-deployment
+  labels:
+    app: node-backend-deployment-label
+spec: 
+  replicas: 3
+  strategy: 
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app: kube-web-backend 
+  template:
+    metadata:
+      labels:
+        app: kube-web-backend
+    spec: 
+      containers:  
+        - name: kube-web-backend-container
+          image: itisameeerkhan/kube-web-backend:v2
+          ports: 
+            - containerPort: 8080
+
+---
+apiVersion: v1 
+kind: Service 
+metadata:
+  name: node-backend-service 
+  labels: 
+    app: node-backend-service-label
+spec: 
+  type: NodePort
+  selector: 
+       app: kube-web-backend
+  ports: 
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
+      nodePort: 30080
+```
+
+### after updating the version run this command 
+
+```
+kubectl apply -f deployment.yml
+```
+
+#### output 
+
+```
+node-backend-deployment-6465674fc5-jjksc   0/1     Pending       0          0s
+node-backend-deployment-6465674fc5-jjksc   0/1     Pending       0          0s
+node-backend-deployment-6465674fc5-jjksc   0/1     ContainerCreating   0          0s
+node-backend-deployment-6465674fc5-jjksc   1/1     Running             0          1s
+node-backend-deployment-779bf76c94-tgz2c   1/1     Terminating         0          25s
+node-backend-deployment-779bf76c94-tgz2c   1/1     Terminating         0          25s
+node-backend-deployment-6465674fc5-f7h4g   0/1     Pending             0          0s
+node-backend-deployment-6465674fc5-f7h4g   0/1     Pending             0          0s
+node-backend-deployment-6465674fc5-f7h4g   0/1     ContainerCreating   0          0s
+node-backend-deployment-6465674fc5-f7h4g   1/1     Running             0          2s
+node-backend-deployment-779bf76c94-xpmdb   1/1     Terminating         0          23s
+node-backend-deployment-6465674fc5-q8s58   0/1     Pending             0          0s       
+node-backend-deployment-779bf76c94-xpmdb   1/1     Terminating         0          23s      
+node-backend-deployment-6465674fc5-q8s58   0/1     Pending             0          0s
+node-backend-deployment-6465674fc5-q8s58   0/1     ContainerCreating   0          0s
+node-backend-deployment-6465674fc5-q8s58   1/1     Running             0          1s
+node-backend-deployment-779bf76c94-57h5m   1/1     Terminating         0          27s
+node-backend-deployment-779bf76c94-57h5m   1/1     Terminating         0          27s      
+```
+
+### ⚡ Checking the History
+
+```cmd
+kubectl rollout history deployment node-backend-deployment
+```
+
+### ⚡ Checking how much replica set created 
+
+```cmd
+kubectl get rs
+```
+
+```
+NAME                                 DESIRED   CURRENT   READY   AGE
+node-backend-deployment-6465674fc5   3         3         3       3m1s
+node-backend-deployment-779bf76c94   0         0         0       3m38s
+```
+
+### ⚡ Rollback (one version back)
+
+```cmd
+kubectl rollout undo deployment node-backend-deployment
+```
+
+```
+kubectl get rs
+```
+
+```
+NAME                                 DESIRED   CURRENT   READY   AGE
+node-backend-deployment-6465674fc5   0         0         0       2m21s
+node-backend-deployment-779bf76c94   3         3         3       2m58s
+```
+
