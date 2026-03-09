@@ -198,6 +198,8 @@ spec:
 
 ## ⭐ creating a deployment 
 
+![demo](../assets/demo016.png)
+
 ```yml
 apiVersion: apps/v1
 kind: Deployment 
