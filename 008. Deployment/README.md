@@ -74,3 +74,11 @@ Rolling Update is a deployment strategy in Kubernetes used to update an applicat
 When a new version of an application is deployed, Kubernetes starts creating new Pods with the updated image while slowly terminating the old Pods. Because some Pods remain active throughout the process, users can continue accessing the application without experiencing downtime.
 
 ![demo](../assets/demo001.gif)
+
+## ⭐ History Storage in Kubernetes Deployment
+
+In Kubernetes, a Deployment keeps the history of previous versions of an application using ReplicaSets. Every time the application is updated with a new version, Kubernetes creates a new ReplicaSet while keeping the old ReplicaSets stored as part of the deployment history.
+
+This allows Kubernetes to roll back to a previous version if the new version fails or causes problems.
+
+![demo](../assets/demo002.gif)
