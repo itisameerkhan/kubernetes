@@ -82,6 +82,11 @@ data:
   SECRET: this-is-the-secret-from-kubernetes-configmap
 ```
 
+```
+kubectl apply -f configmap.yml
+```
+
+
 #### check created configmap 
 
 ```cmd
@@ -152,7 +157,7 @@ spec:
             - containerPort: 8080
           envFrom: 
             - configMapRef: 
-              name: node-api-configmap
+                name: node-api-configmap
 
 ---
 
