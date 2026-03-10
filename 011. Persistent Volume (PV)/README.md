@@ -100,3 +100,39 @@ A StorageClass in Kubernetes defines how Persistent Volumes (PV) should be creat
 Before StorageClass existed, administrators had to manually create PVs and developers would create PVCs to bind to them. With StorageClass, when a PVC requests storage, Kubernetes can automatically create the required PV using the specified storage backend.
 
 In simple terms, StorageClass acts like a storage template or blueprint that tells Kubernetes how to create storage dynamically.
+
+
+### ⚡ Example YML for StorageClass
+
+```yml
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata: 
+    name: demo-storage-class
+spec: 
+    provisioner: kubernetes.io/aws-ebs
+    parameters: 
+        type: gp2
+    reclaimPolicy: Delete
+```
+
+### ⚡ If you want to delete PV after PVC deleted
+
+```yml
+spec: 
+    provisioner: kubernetes.io/aws-ebs
+    parameters: 
+        type: gp2
+    reclaimPolicy: Delete 👈
+```
+
+
+### ⚡ If you want PV after PVC deleted
+
+```yml
+spec: 
+    provisioner: kubernetes.io/aws-ebs
+    parameters: 
+        type: gp2
+    reclaimPolicy: Retain 👈
+```
