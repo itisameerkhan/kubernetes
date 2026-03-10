@@ -59,3 +59,194 @@ envFrom:
     - configMapRef: 
         name: config-map-demo 
 ```
+
+### ⚡ If we coverted the file into configmap then use this 
+
+```yml
+VolumeMounts: 
+    - name: myconfigmapdemo
+      mountPath: /config
+        readOnly: true
+        volumes:   
+```
+
+### ⚡ Config map 
+
+```yml
+apiVersion: v1 
+kind: ConfigMap 
+metadata:
+  name: node-api-configmap 
+data: 
+  PORT: "8080"
+  SECRET: this-is-the-secret-from-kubernetes-configmap
+```
+
+#### check created configmap 
+
+```cmd
+kubectl get configmap
+```
+
+#### describe the configmap 
+
+```cmd
+kubectl describe cm node-api-configmap
+```
+
+```
+Name:         node-api-configmap
+Namespace:    default
+Labels:       <none>
+Annotations:  <none>
+
+Data
+====
+PORT:
+----
+8080
+
+SECRET:
+----
+this-is-the-secret-from-kubernetes-configmap
+
+
+BinaryData
+====
+
+Events:  <none>
+```
+
+### ⚡ `envFrom`
+
+```yml
+envFrom: 
+    - configMapRef: 
+      name: node-api-configmap
+```
+
+
+```yml
+apiVersion: apps/v1
+kind: Deployment 
+metadata:
+  name: node-api-deployment
+  labels:
+    app: node-api-deployment-label
+spec: 
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+  selector: 
+    matchLabels:
+      app: node-api 
+  template:
+    metadata: 
+      labels:
+        app: node-api 
+    spec: 
+      containers:
+        - name: node-api-container 
+          image: itisameerkhan/node-api:v6
+          ports: 
+            - containerPort: 8080
+          envFrom: 
+            - configMapRef: 
+              name: node-api-configmap
+
+---
+
+apiVersion: v1 
+kind: Service 
+metadata:
+  name: node-api-service 
+  labels: 
+    app: node-api-service-label
+spec: 
+  type: NodePort 
+  selector: 
+    app: node-api 
+  ports: 
+    - port: 80
+      targetPort: 8080 
+      nodePort: 30080
+```
+
+### ⚡ mount volume the env 
+
+```yml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: node-api-deployment
+  labels:
+    app: node-api-deployment-label
+spec: 
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+  selector: 
+    matchLabels:
+      app: node-api 
+  template:
+    metadata: 
+      labels: 
+        app: node-api 
+    spec: 
+      containers:
+        - name: node-api-container 
+          image: itisameerkhan/node-api:v6
+          ports: 
+            - containerPort: 8080
+          volumeMounts: 
+            - name: node-api-volume 
+              mountPath: /config
+      volumes: 
+        - name: node-api-volume 
+          configMap: 
+            name: node-api-configmap
+
+--- 
+
+apiVersion: v1 
+kind: Service 
+metadata:
+  name: node-api-service 
+  labels: 
+    app: node-api-service-label
+spec: 
+  type: NodePort 
+  selector: 
+    app: node-api 
+  ports: 
+    - protocol: TCP 
+      port: 80
+      targetPort: 8080
+      nodePort: 30080
+```
+
+![demo](../assets/demo019.png)
+
+---
+
+### ⚡ Creating configmap from file 
+
+```cmd
+kubectl create cm configmap-demo-user --from-file=demo.yml
+``` 
+
+```yml
+# secret.yml
+apiVersion: v1 
+kind: Secret 
+metadata:
+  name: node-api-secret 
+  labels:
+    app: node-api-secret-label 
+type: Opaque 
+data:   
+  PORT: ODA4MA==
+  SECRET: dGhpcy1zZWNyZXQtY29taW5nLWZyb20tc2VjcmV0LWNvbmZpZ21hcC12b2x1bWUtbW91bnQ=
+```
+
+![demo](../assets/demo020.png)
