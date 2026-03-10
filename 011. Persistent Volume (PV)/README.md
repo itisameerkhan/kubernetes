@@ -72,6 +72,8 @@ spec:
             storage: 1Gi
 ```
 
+![demo](../assets/demo022.png)
+
 ## ⭐ Question: If PVC Requests 1Gi but Only a 2Gi PV Exists, What Happens?
 
 In Kubernetes, a **PersistentVolumeClaim (PVC)** requests a specific amount of storage. Kubernetes will try to find a **PersistentVolume (PV)** that satisfies the request. The important rule is that the PV must have **equal or greater capacity than the requested storage**.
