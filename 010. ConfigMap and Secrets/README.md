@@ -250,3 +250,54 @@ data:
 ```
 
 ![demo](../assets/demo020.png)
+
+```
+kubectl apply -f secret.yml
+```
+
+### ⚡ changes in yml 
+
+```yml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: node-api-deployment
+  labels:
+    app: node-api-deployment-label
+spec:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app: node-api
+  template:
+    metadata:
+      labels:
+        app: node-api
+    spec:
+      containers:
+        - name: node-api-container
+          image: itisameerkhan/node-api:v6
+          ports:
+            - containerPort: 8080
+          envFrom: 👈
+            - secretRef: 
+                name: node-api-secret 
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: node-api-service
+  labels:
+    app: node-api-service-label
+spec:
+  type: NodePort
+  selector:
+    app: node-api
+  ports:
+    - port: 80
+      targetPort: 8080
+      nodePort: 30080
+```
