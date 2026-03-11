@@ -42,3 +42,17 @@ If a database pod crashes and the data is lost, the application becomes unusable
 A StatefulSet in Kubernetes is used to manage applications that store data and need stable identities, such as databases. Unlike stateless applications where pods can be created or destroyed freely, stateful applications require consistency in their pod name, network identity, and storage. StatefulSet ensures that each pod keeps the same identity and its own persistent storage even if it crashes or is restarted.
 
 For example, if you run a database like MongoDB in Kubernetes using a StatefulSet with three replicas, Kubernetes will create pods with predictable names such as mongodb-0, mongodb-1, and mongodb-2. If the pod mongodb-1 fails, Kubernetes recreates it with the same name and the same storage, so the database data is not lost. This is important for systems that rely on stable identities, such as distributed databases or clustered applications.
+
+## A StatefulSet is commonly used to run database clusters in Kubernetes because databases need persistent storage and stable identities. Consider a database setup with 3 pods: one master database and two replica (slave) databases. The master database handles all write operations, while the replica databases receive copies of the data from the master to keep the cluster synchronized.
+
+When a client application sends a request to store data, the request goes to the master database pod. The master writes the data to its own persistent storage. After writing the data, the master replicates the same data to the replica databases, so all database nodes contain the same information. This process is called database replication.
+
+In Kubernetes, the StatefulSet creates pods with stable names, such as db-0, db-1, and db-2. Typically, the first pod (db-0) acts as the master, and the other two pods (db-1 and db-2) act as replicas. Each of these pods has its own PersistentVolumeClaim, which connects to a Persistent Volume. Because of this, every database instance has its own disk storage.
+
+Each database pod writes its data to its own Persistent Volume. This means that if a pod crashes or is deleted, the data is not lost, because the storage is separate from the container itself. Kubernetes will recreate the pod with the same name, and it will reconnect to the same volume, allowing the database to continue using its previous data.
+
+![demo](../assets/demo023.png)
+
+## ⭐ How a Backend Pod Talks to the Master Database Pod Using DNS in Kubernetes
+
+In Kubernetes, pods communicate with each other using DNS-based service discovery. Instead of using IP addresses (which change when pods restart), Kubernetes assigns stable DNS names to services and StatefulSet pods. This allows applications like backend APIs to reliably connect to database pods.
