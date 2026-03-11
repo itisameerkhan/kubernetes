@@ -136,3 +136,116 @@ spec:
         type: gp2
     reclaimPolicy: Retain 👈
 ```
+
+### ⚡ Get the PVC
+
+```
+kubectl get pvc
+```
+
+### ⚡ Creating a PVC 
+
+```yml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata: 
+    name: node-api-pvc
+    labels:
+        app: node-api-pvc-label
+spec: 
+    accessModes: 
+        - ReadWriteOnce
+    resources:
+        requests:   
+            storage: 1Gi
+```
+
+```
+kubectl apply -f node-api-pvc.yml
+``` 
+
+### ⚡ Creating a PV 
+
+```yml
+apiVersion: v1
+kind: PersistentVolume
+metadata: 
+    name: node-api-pv
+    labels: 
+        app: node-api-pv-label
+spec: 
+    capacity: 
+        storage: 1Gi
+    accessModes: 
+        - ReadWriteOnce 
+    persistentVolumeReclaimPolicy: Delete
+    hostPath: 
+        path: /data/test
+```
+
+```
+kubectl apply -f node-api-pv.yml
+```
+
+
+---
+
+```
+kubectl get pv
+```
+
+```
+NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS      CLAIM                  STORAGECLASS   VOLUMEATTRIBUTESCLASS   REASON   AGE
+node-api-pv                                1Gi        RWO            Delete           Available                                         <unset>                          5m33s
+pvc-f37dcb18-1e65-420c-860f-1aaff58940c5   1Gi        RWO            Delete           Bound       default/node-api-pvc   standard       <unset>                          109s
+```
+---
+```
+kubectl get pvc
+```
+
+```
+NAME           STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   VOLUMEATTRIBUTESCLASS   AGE
+node-api-pvc   Bound    pvc-f37dcb18-1e65-420c-860f-1aaff58940c5   1Gi        RWO            standard       <unset>                 113s
+```
+
+## ⭐ What is a StorageClass in Kubernetes?
+
+A StorageClass in Kubernetes defines how storage should be dynamically created for PersistentVolumeClaims (PVCs). It acts like a template or blueprint for storage provisioning. Instead of manually creating Persistent Volumes (PV), Kubernetes can automatically create them when a PVC requests storage using a StorageClass.
+
+In simple terms, a StorageClass tells Kubernetes what type of storage to create, which provisioner to use, and what policy to apply when storage is needed.
+
+For example, when a developer creates a PVC requesting 1Gi storage, Kubernetes checks the StorageClass and automatically creates a matching Persistent Volume.
+
+```yml
+# storage-class.yml
+apiVersion: storage.k8s.io/v1
+kind: StorageClass 
+metadata: 
+  name: node-api-sc
+  labels: 
+    app: node-api-sc-label
+provisioner: k8s.io/minikube-hostpath
+reclaimPolicy: Delete 
+```
+
+```
+kubectl apply -f storage-class.yml
+```
+
+```yml
+#pvc.yml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: node-api-pvc
+  labels: 
+    app: node-api-pvc-label 
+spec: 
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: node-api-sc 👈
+  resources: 
+    requests:
+      storage: 1Gi
+```
