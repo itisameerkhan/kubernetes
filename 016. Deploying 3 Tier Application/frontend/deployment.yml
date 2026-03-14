@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment 
+metadata:
+  name: rexa-frontend-deployment
+  labels: 
+    app: rexa-frontend-deployment-label
+spec: 
+  replicas: 1
+  selector: 
+    matchLabels:
+      app: rexa-frontend 
+  template: 
+    metadata:
+      labels:
+        app: rexa-frontend
+    spec: 
+      containers:
+        - name: rexa-frontend-container
+          image: itisameerkhan/rexa-frontend:v5
+          imagePullPolicy: Always
+          ports: 
+            - containerPort: 5173
+          env:
+            - name: VITE_NODE_URL
+              value: "http://127.0.0.1:64847"

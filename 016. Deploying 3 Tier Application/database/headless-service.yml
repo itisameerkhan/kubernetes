@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: Service 
+metadata: 
+  name: rexa-headless-service 
+spec: 
+  clusterIP: None 
+  selector: 
+    app: rexa-mongo  
